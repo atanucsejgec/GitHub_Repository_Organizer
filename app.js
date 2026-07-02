@@ -5,21 +5,21 @@ const TREE_API_BASE = `https://api.github.com/repos/${GITHUB_USER}`;
 
 // ===== Category Definitions =====
 const CATEGORIES = {
-  'Android & Kotlin': { icon: '📱', cssClass: 'cat-kotlin',     languages: ['Kotlin', 'Java'] },
-  Web:                { icon: '🌐', cssClass: 'cat-web',        languages: ['HTML', 'CSS', 'JavaScript', 'Vue', 'Svelte', 'PHP'] },
-  Python:             { icon: '🐍', cssClass: 'cat-python',     languages: ['Python'] },
-  TypeScript:         { icon: '🔷', cssClass: 'cat-typescript', languages: ['TypeScript'] },
-  'C++':              { icon: '⚙️', cssClass: 'cat-cpp',        languages: ['C++'] },
-  C:                  { icon: '🔧', cssClass: 'cat-c',          languages: ['C'] },
-  'C#':               { icon: '🟩', cssClass: 'cat-csharp',     languages: ['C#'] },
-  Go:                 { icon: '🐹', cssClass: 'cat-go',         languages: ['Go'] },
-  Rust:               { icon: '🦀', cssClass: 'cat-rust',       languages: ['Rust'] },
-  Ruby:               { icon: '💎', cssClass: 'cat-ruby',       languages: ['Ruby'] },
-  Swift:              { icon: '🍎', cssClass: 'cat-swift',      languages: ['Swift'] },
-  Dart:               { icon: '🎯', cssClass: 'cat-dart',       languages: ['Dart'] },
-  Shell:              { icon: '🖥️', cssClass: 'cat-shell',      languages: ['Shell', 'PowerShell', 'Batchfile'] },
-  'README Only / Empty': { icon: '📄', cssClass: 'cat-readme',  languages: [] },
-  'Other Projects':   { icon: '📦', cssClass: 'cat-other',      languages: [] },
+  'Android & Kotlin': { icon: '📱', cssClass: 'cat-kotlin', languages: ['Kotlin', 'Java'] },
+  Web: { icon: '🌐', cssClass: 'cat-web', languages: ['HTML', 'CSS', 'JavaScript', 'Vue', 'Svelte', 'PHP'] },
+  Python: { icon: '🐍', cssClass: 'cat-python', languages: ['Python'] },
+  TypeScript: { icon: '🔷', cssClass: 'cat-typescript', languages: ['TypeScript'] },
+  'C++': { icon: '⚙️', cssClass: 'cat-cpp', languages: ['C++'] },
+  C: { icon: '🔧', cssClass: 'cat-c', languages: ['C'] },
+  'C#': { icon: '🟩', cssClass: 'cat-csharp', languages: ['C#'] },
+  Go: { icon: '🐹', cssClass: 'cat-go', languages: ['Go'] },
+  Rust: { icon: '🦀', cssClass: 'cat-rust', languages: ['Rust'] },
+  Ruby: { icon: '💎', cssClass: 'cat-ruby', languages: ['Ruby'] },
+  Swift: { icon: '🍎', cssClass: 'cat-swift', languages: ['Swift'] },
+  Dart: { icon: '🎯', cssClass: 'cat-dart', languages: ['Dart'] },
+  Shell: { icon: '🖥️', cssClass: 'cat-shell', languages: ['Shell', 'PowerShell', 'Batchfile'] },
+  'README Only / Empty': { icon: '📄', cssClass: 'cat-readme', languages: [] },
+  'Other Projects': { icon: '📦', cssClass: 'cat-other', languages: [] },
 };
 
 // ===== State =====
@@ -358,6 +358,7 @@ function renderHomePage() {
             <span class="repo-link" title="${repo.name}">${repo.name}</span>
             ${repo.private ? '<span class="explorer-private-badge">Private</span>' : ''}
             ${repo.description ? `<span class="explorer-description">- ${escapeHtml(repo.description)}</span>` : ''}
+            ${(catName === 'Web' || catName === 'README Only / Empty') ? `<a href="https://${GITHUB_USER}.github.io/${repo.name}/" target="_blank" rel="noopener" class="explorer-website-link" title="Open Website" onclick="event.stopPropagation()">🌐 Website</a>` : ''}
           </li>
         `).join('')}
       </ul>
@@ -592,6 +593,15 @@ function renderRepoHeader(repo) {
     year: 'numeric', month: 'short', day: 'numeric'
   });
 
+  // Check if it's a web or readme repo to add website link
+  let hasWebsite = false;
+  if (
+    (categorizedRepos['Web'] && categorizedRepos['Web'].find(r => r.name === repo.name)) ||
+    (categorizedRepos['README Only / Empty'] && categorizedRepos['README Only / Empty'].find(r => r.name === repo.name))
+  ) {
+    hasWebsite = true;
+  }
+
   return `
     <div class="repo-header">
       <div class="repo-info">
@@ -602,6 +612,13 @@ function renderRepoHeader(repo) {
           </span>
         </div>
         ${repo.description ? `<div class="repo-description">${escapeHtml(repo.description)}</div>` : ''}
+        ${hasWebsite ? `
+          <div style="margin-top: 8px;">
+            <a href="${repo.homepage || `https://${GITHUB_USER}.github.io/${repo.name}/`}" target="_blank" rel="noopener" style="color: var(--accent-blue); text-decoration: none; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; transition: color var(--transition-fast);">
+              <span style="font-size: 15px;">🌐</span> ${repo.homepage || `https://${GITHUB_USER}.github.io/${repo.name}/`}
+            </a>
+          </div>
+        ` : ''}
         <div class="repo-meta">
           ${repo.language ? `<span class="repo-meta-item">
             <span style="background: ${getLanguageColor(repo.language)}; width: 12px; height: 12px; border-radius: 50%; display: inline-block;"></span>

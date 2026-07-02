@@ -565,6 +565,25 @@ a {
   margin-top: 2px;
 }
 
+.explorer-website-link {
+  font-size: 0.75rem;
+  color: var(--accent-blue);
+  background: rgba(88, 166, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: 100px;
+  margin-left: 10px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  border: 1px solid rgba(88, 166, 255, 0.2);
+}
+
+.explorer-website-link:hover {
+  background: rgba(88, 166, 255, 0.2);
+  color: #fff;
+  text-decoration: none;
+}
+
 /* ============================================
    PAGE 2: CATEGORY — Repos list for a language
    ============================================ */
