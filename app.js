@@ -343,6 +343,10 @@ function renderHomePage() {
         <span class="title-icon">🌳</span>
         All Repositories — Quick Access
         <span class="title-count">${allRepos.length} repos</span>
+        <div class="tree-toggle-actions" style="margin-left: auto;">
+          <button class="btn-tree-toggle" id="btn-quick-collapse" title="Collapse all folders">⊟ Collapse All</button>
+          <button class="btn-tree-toggle" id="btn-quick-expand" title="Expand all folders">⊞ Expand All</button>
+        </div>
       </div>
       <div class="quick-tree" id="quick-tree">
   `;
@@ -350,17 +354,29 @@ function renderHomePage() {
   for (const [catName, repos] of sortedCats) {
     const cat = CATEGORIES[catName];
     html += `
-      <div class="explorer-folder" data-cat="${catName}">📂 ${cat.icon} ${catName}</div>
-      <ul class="explorer-file-list" data-cat="${catName}">
-        ${repos.map(repo => `
+      <div class="explorer-folder expanded" data-cat="${catName}">
+        <span class="tree-toggle" style="color: inherit;">${icons.chevron}</span>
+        📂 ${cat.icon} ${catName}
+      </div>
+      <ul class="explorer-file-list open" data-cat="${catName}">
+        ${repos.map(repo => {
+      const linkUrl = repo.homepage || ((catName === 'Web' || catName === 'README Only / Empty') ? `https://${GITHUB_USER}.github.io/${repo.name}/` : null);
+
+      let linkText = '🌐 Link';
+      if (catName === 'Web') linkText = '🌐 Website';
+      else if (catName === 'Android & Kotlin') linkText = '⬇️ Download Apk';
+      else if (catName === 'README Only / Empty') linkText = '👁️ Preview';
+
+      return `
           <li data-repo="${repo.name}">
             <span class="explorer-file-icon">📄</span>
             <span class="repo-link" title="${repo.name}">${repo.name}</span>
             ${repo.private ? '<span class="explorer-private-badge">Private</span>' : ''}
             ${repo.description ? `<span class="explorer-description">- ${escapeHtml(repo.description)}</span>` : ''}
-            ${(catName === 'Web' || catName === 'README Only / Empty') ? `<a href="https://${GITHUB_USER}.github.io/${repo.name}/" target="_blank" rel="noopener" class="explorer-website-link" title="Open Website" onclick="event.stopPropagation()">🌐 Website</a>` : ''}
+            ${linkUrl ? `<a href="${linkUrl}" target="_blank" rel="noopener" class="explorer-website-link" title="${linkText}" onclick="event.stopPropagation()">${linkText}</a>` : ''}
           </li>
-        `).join('')}
+          `;
+    }).join('')}
       </ul>
     `;
   }
@@ -379,6 +395,34 @@ function bindHomeEvents() {
       navigate(`#/repo/${encodeURIComponent(item.dataset.repo)}`);
     });
   });
+
+  // Folder toggles
+  $$('.explorer-folder').forEach(folder => {
+    folder.addEventListener('click', () => {
+      folder.classList.toggle('expanded');
+      const cat = folder.dataset.cat;
+      const list = document.querySelector(`.explorer-file-list[data-cat="${CSS.escape(cat)}"]`);
+      if (list) {
+        list.classList.toggle('open');
+      }
+    });
+  });
+
+  // Global expand/collapse for Quick Access
+  const btnCollapse = document.getElementById('btn-quick-collapse');
+  const btnExpand = document.getElementById('btn-quick-expand');
+  if (btnCollapse) {
+    btnCollapse.addEventListener('click', () => {
+      $$('.explorer-file-list').forEach(list => list.classList.remove('open'));
+      $$('.explorer-folder').forEach(f => f.classList.remove('expanded'));
+    });
+  }
+  if (btnExpand) {
+    btnExpand.addEventListener('click', () => {
+      $$('.explorer-file-list').forEach(list => list.classList.add('open'));
+      $$('.explorer-folder').forEach(f => f.classList.add('expanded'));
+    });
+  }
 
   // Search filter
   const searchInput = $('#home-search');
@@ -593,14 +637,23 @@ function renderRepoHeader(repo) {
     year: 'numeric', month: 'short', day: 'numeric'
   });
 
-  // Check if it's a web or readme repo to add website link
-  let hasWebsite = false;
-  if (
-    (categorizedRepos['Web'] && categorizedRepos['Web'].find(r => r.name === repo.name)) ||
-    (categorizedRepos['README Only / Empty'] && categorizedRepos['README Only / Empty'].find(r => r.name === repo.name))
-  ) {
-    hasWebsite = true;
+  // Check category to determine website link and label
+  let repoCatName = '';
+  for (const [catName, reposList] of Object.entries(categorizedRepos)) {
+    if (reposList.find(r => r.name === repo.name)) {
+      repoCatName = catName;
+      break;
+    }
   }
+
+  let linkText = 'Link';
+  let linkIcon = '🌐';
+  if (repoCatName === 'Web') { linkText = 'WebSite'; linkIcon = '🌐'; }
+  else if (repoCatName === 'Android & Kotlin') { linkText = 'Download Apk'; linkIcon = '⬇️'; }
+  else if (repoCatName === 'README Only / Empty') { linkText = 'Preview'; linkIcon = '👁️'; }
+
+  let hasWebsite = (repoCatName === 'Web' || repoCatName === 'README Only / Empty');
+  const linkUrl = repo.homepage || (hasWebsite ? `https://${GITHUB_USER}.github.io/${repo.name}/` : null);
 
   return `
     <div class="repo-header">
@@ -612,10 +665,10 @@ function renderRepoHeader(repo) {
           </span>
         </div>
         ${repo.description ? `<div class="repo-description">${escapeHtml(repo.description)}</div>` : ''}
-        ${hasWebsite ? `
+        ${linkUrl ? `
           <div style="margin-top: 8px;">
-            <a href="${repo.homepage || `https://${GITHUB_USER}.github.io/${repo.name}/`}" target="_blank" rel="noopener" style="color: var(--accent-blue); text-decoration: none; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; transition: color var(--transition-fast);">
-              <span style="font-size: 15px;">🌐</span> ${repo.homepage || `https://${GITHUB_USER}.github.io/${repo.name}/`}
+            <a href="${linkUrl}" target="_blank" rel="noopener" class="repo-header-website-link">
+              <span style="font-size: 14px;">${linkIcon}</span> ${linkText}
             </a>
           </div>
         ` : ''}

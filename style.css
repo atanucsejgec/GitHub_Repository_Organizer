@@ -484,24 +484,36 @@ a {
 
 /* VS Code-style Explorer */
 .explorer-folder {
-  margin-top: 20px;
-  font-size: 1.2rem;
-  font-weight: bold;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 15px;
   color: #dcdcaa;
   cursor: pointer;
   user-select: none;
   padding: 6px 0;
   transition: color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .explorer-folder:hover {
   color: #e5d8a1;
 }
 
+.explorer-folder.expanded .tree-toggle {
+  transform: rotate(90deg);
+}
+
 .explorer-file-list {
   list-style-type: none;
   padding-left: 20px;
   margin-top: 10px;
+  display: none;
+}
+
+.explorer-file-list.open {
+  display: block;
 }
 
 .explorer-file-list li {
@@ -566,21 +578,21 @@ a {
 }
 
 .explorer-website-link {
-  font-size: 0.75rem;
-  color: var(--accent-blue);
-  background: rgba(88, 166, 255, 0.1);
-  padding: 2px 8px;
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  background: rgba(139, 148, 158, 0.1);
+  padding: 1px 6px;
   border-radius: 100px;
   margin-left: 10px;
   text-decoration: none;
   font-weight: 500;
   transition: all var(--transition-fast);
-  border: 1px solid rgba(88, 166, 255, 0.2);
+  border: 1px solid rgba(139, 148, 158, 0.2);
 }
 
 .explorer-website-link:hover {
-  background: rgba(88, 166, 255, 0.2);
-  color: #fff;
+  background: rgba(139, 148, 158, 0.2);
+  color: var(--text-primary);
   text-decoration: none;
 }
 
@@ -821,10 +833,26 @@ a {
 }
 
 .repo-description {
-  font-size: 15px;
+  font-size: 1.1rem;
   color: var(--text-secondary);
-  margin-top: 8px;
+  margin-bottom: 15px;
   line-height: 1.5;
+  max-width: 800px;
+}
+
+.repo-header-website-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color var(--transition-fast);
+}
+
+.repo-header-website-link:hover {
+  color: var(--accent-blue);
 }
 
 .repo-meta {
