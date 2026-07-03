@@ -105,7 +105,14 @@ async function fetchAllRepos() {
 async function fetchRepoTree(repoName) {
   if (treeCache[repoName]) return treeCache[repoName];
 
-  for (const branch of ['main', 'master']) {
+  const repo = allRepos.find(r => r.name === repoName);
+  const defaultBranch = repo && repo.default_branch ? repo.default_branch : 'main';
+  
+  const branchesToTry = [defaultBranch];
+  if (defaultBranch !== 'main') branchesToTry.push('main');
+  if (defaultBranch !== 'master') branchesToTry.push('master');
+
+  for (const branch of branchesToTry) {
     const url = `${TREE_API_BASE}/${repoName}/git/trees/${branch}?recursive=1`;
     const res = await fetch(url, { headers: getHeaders() });
     if (res.ok) {
@@ -716,6 +723,9 @@ function buildTreeStructure(items) {
 }
 
 function renderTreeNode(node, repoName, depth = 0) {
+  const repo = allRepos.find(r => r.name === repoName);
+  const defaultBranch = repo && repo.default_branch ? repo.default_branch : 'main';
+
   const sortedChildren = Object.values(node.children).sort((a, b) => {
     if (a.type === 'tree' && b.type !== 'tree') return -1;
     if (a.type !== 'tree' && b.type === 'tree') return 1;
@@ -729,8 +739,8 @@ function renderTreeNode(node, repoName, depth = 0) {
     const hasChildren = Object.keys(child.children).length > 0;
     const isLast = idx === sortedChildren.length - 1;
     const fileInfo = getFileIcon(child.name);
-    const fileUrl = `https://github.com/${GITHUB_USER}/${repoName}/blob/main/${child.path}`;
-    const dirUrl = `https://github.com/${GITHUB_USER}/${repoName}/tree/main/${child.path}`;
+    const fileUrl = `https://github.com/${GITHUB_USER}/${repoName}/blob/${defaultBranch}/${child.path}`;
+    const dirUrl = `https://github.com/${GITHUB_USER}/${repoName}/tree/${defaultBranch}/${child.path}`;
 
     if (isDir) {
       html += `
