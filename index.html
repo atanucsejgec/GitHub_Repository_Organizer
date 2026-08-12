@@ -34,6 +34,12 @@
       <!-- Breadcrumb -->
       <nav class="breadcrumb" id="breadcrumb"></nav>
       <div class="header-actions">
+        <button class="btn-icon" id="btn-search" title="Search repositories (Ctrl+K)">
+          <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
+            <path
+              d="M10.68 11.74a6 6 0 0 1-7.922-8.982 6 6 0 0 1 8.982 7.922l3.04 3.04a.749.749 0 1 1-1.06 1.06l-3.04-3.04ZM11.5 7a4.499 4.499 0 1 0-8.997 0A4.499 4.499 0 0 0 11.5 7Z" />
+          </svg>
+        </button>
         <button class="btn-icon btn-refresh" id="btn-refresh" title="Refresh repositories">
           <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
             <path
@@ -115,6 +121,20 @@
         <button class="btn btn-danger" id="btn-delete-token">Delete Token</button>
         <button class="btn btn-secondary" id="btn-close-modal">Cancel</button>
         <button class="btn btn-primary" id="btn-save-token">Save & Reload</button>
+      </div>
+    </div>
+  <!-- Search Dialog Modal -->
+  <div class="modal-overlay" id="search-modal">
+    <div class="modal search-modal-dialog">
+      <div class="search-modal-header">
+        <div class="search-modal-input-wrapper">
+          <span class="search-modal-icon">🔍</span>
+          <input type="text" class="search-modal-input" id="dialog-search-input" placeholder="Search repositories by name, language, or description..." autocomplete="off">
+          <kbd class="search-modal-kbd">ESC</kbd>
+        </div>
+      </div>
+      <div class="search-modal-results" id="search-modal-results">
+        <div class="search-modal-hint">Type to search across all repositories...</div>
       </div>
     </div>
   </div>

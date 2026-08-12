@@ -345,16 +345,6 @@ function renderHomePage() {
 
   let html = '';
 
-  // Search
-  html += `
-    <div class="search-section">
-      <div class="search-box">
-        ${icons.search}
-        <input type="text" id="home-search" placeholder="Search repositories..." autocomplete="off">
-      </div>
-    </div>
-  `;
-
   // Section: Language Folders
   html += `
     <div class="section-title">
@@ -465,15 +455,6 @@ function bindHomeEvents() {
     btnExpand.addEventListener('click', () => {
       $$('.explorer-file-list').forEach(list => list.classList.add('open'));
       $$('.explorer-folder').forEach(f => f.classList.add('expanded'));
-    });
-  }
-
-  // Search filter
-  const searchInput = $('#home-search');
-  if (searchInput) {
-    searchInput.addEventListener('input', () => {
-      const term = searchInput.value.toLowerCase();
-      filterHomeTree(term);
     });
   }
 }
@@ -1105,10 +1086,116 @@ async function loadRepos() {
   }
 }
 
+// ===== Search Dialog Modal =====
+function openSearchModal() {
+  const modal = $('#search-modal');
+  if (!modal) return;
+  modal.classList.add('visible');
+  const input = $('#dialog-search-input');
+  if (input) {
+    input.value = '';
+    input.focus();
+    renderSearchResults('');
+  }
+}
+
+function closeSearchModal() {
+  const modal = $('#search-modal');
+  if (modal) modal.classList.remove('visible');
+}
+
+function renderSearchResults(term) {
+  const resultsContainer = $('#search-modal-results');
+  if (!resultsContainer) return;
+
+  const cleanTerm = term.trim().toLowerCase();
+  if (!cleanTerm) {
+    resultsContainer.innerHTML = `<div class="search-modal-hint">Type to search across all ${allRepos.length} repositories...</div>`;
+    return;
+  }
+
+  const matches = allRepos.filter(repo => {
+    const name = (repo.name || '').toLowerCase();
+    const desc = (repo.description || '').toLowerCase();
+    const lang = (repo.language || '').toLowerCase();
+    return name.includes(cleanTerm) || desc.includes(cleanTerm) || lang.includes(cleanTerm);
+  });
+
+  if (matches.length === 0) {
+    resultsContainer.innerHTML = `
+      <div class="empty-state" style="padding: 30px 20px;">
+        <div class="empty-state-icon">🔍</div>
+        <div class="empty-state-text">No repositories match "${escapeHtml(term)}"</div>
+        <div class="empty-state-hint">Try searching by language (e.g. Python, Kotlin, JavaScript) or topic</div>
+      </div>
+    `;
+    return;
+  }
+
+  let html = '';
+  matches.forEach(repo => {
+    let repoCat = 'Other Projects';
+    for (const [catName, repos] of Object.entries(categorizedRepos)) {
+      if (repos.find(r => r.name === repo.name)) {
+        repoCat = catName;
+        break;
+      }
+    }
+    const catDef = CATEGORIES[repoCat];
+
+    html += `
+      <div class="search-result-card" data-repo="${escapeHtml(repo.name)}">
+        <div class="search-result-header">
+          <div class="search-result-title">
+            <span>${icons.repo}</span>
+            <span>${escapeHtml(repo.name)}</span>
+          </div>
+          <span class="badge ${repo.private ? 'badge-private' : 'badge-public'}">
+            ${repo.private ? '🔒 Private' : 'Public'}
+          </span>
+        </div>
+        ${repo.description ? `<div class="search-result-desc">${escapeHtml(repo.description)}</div>` : ''}
+        <div class="search-result-meta">
+          ${repo.language ? `<span><span style="background: ${getLanguageColor(repo.language)}; width: 10px; height: 10px; border-radius: 50%; display: inline-block;"></span> ${repo.language}</span>` : ''}
+          <span>⭐ ${repo.stargazers_count || 0}</span>
+          <span class="search-result-cat">${catDef ? catDef.icon : '📁'} ${repoCat}</span>
+        </div>
+      </div>
+    `;
+  });
+
+  resultsContainer.innerHTML = html;
+
+  $$('.search-result-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const repoName = card.dataset.repo;
+      closeSearchModal();
+      navigate(`#/repo/${encodeURIComponent(repoName)}`);
+    });
+  });
+}
+
 // ===== Init =====
 function init() {
   updateTokenStatus();
   bindProfileEvents();
+
+  const searchBtn = $('#btn-search');
+  if (searchBtn) searchBtn.addEventListener('click', openSearchModal);
+
+  const searchModal = $('#search-modal');
+  if (searchModal) {
+    searchModal.addEventListener('click', (e) => {
+      if (e.target === searchModal) closeSearchModal();
+    });
+  }
+
+  const dialogInput = $('#dialog-search-input');
+  if (dialogInput) {
+    dialogInput.addEventListener('input', (e) => {
+      renderSearchResults(e.target.value);
+    });
+  }
 
   $('#btn-settings').addEventListener('click', openSettings);
   $('#btn-refresh').addEventListener('click', () => {
@@ -1125,9 +1212,15 @@ function init() {
     if (e.target === $('#settings-modal')) closeSettings();
   });
 
-  // Escape to close modal
+  // Global Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeSettings();
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      openSearchModal();
+    } else if (e.key === 'Escape') {
+      closeSearchModal();
+      closeSettings();
+    }
   });
 
   // Hash-based routing
