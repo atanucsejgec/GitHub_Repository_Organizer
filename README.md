@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=220&section=header&text=GitHub%20Repository%20Organizer&fontSize=50&fontColor=fff&animation=twinkling&fontAlignY=38&desc=Interactive%20File-Manager%20UI%20%26%20Tree%20Explorer%20for%20GitHub%20Repos&descAlignY=62&descColor=fff" />
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=220&section=header&text=GitHub%20Repository%20Organizer&fontSize=50&fontColor=fff&animation=twinkling&fontAlignY=38&desc=Interactive%20File-Manager%20UI%20and%20Tree%20Explorer%20for%20GitHub%20Repos&descAlignY=62&descColor=fff" />
 
 <br/>
 
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&size=22&pause=1000&color=6CF7FF&center=true&vCenter=true&width=650&lines=📁+Language-Based+Folder+Categorization;🌳+VS+Code+Style+Recursive+File+Tree;⚡+Instant+Multi-Field+Search+%26+Filtering;🔑+GitHub+PAT+Support+for+Private+Repos;📊+Dynamic+Stats%2C+Public%2FPrivate+Metrics;🎨+Modern+Glassmorphic+Dark+UI)](https://git.io/typing-svg)
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&size=22&pause=1000&color=6CF7FF&center=true&vCenter=true&width=650&lines=📁+Language-Based+Folder+Categorization;🌳+VS+Code+Style+Recursive+File+Tree;⚡+Instant+Multi-Field+Search+and+Filtering;🔑+GitHub+PAT+Support+for+Private+Repos;📊+Dynamic+Stats%2C+Public%2FPrivate+Metrics;🎨+Modern+Glassmorphic+Dark+UI)](https://git.io/typing-svg)
 
 <br/>
 
