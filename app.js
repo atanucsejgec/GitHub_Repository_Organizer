@@ -1036,18 +1036,15 @@ async function changeProfile(newInput) {
 }
 
 function bindProfileEvents() {
-  const profileForm = $('#profile-form');
-  if (profileForm) {
-    profileForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const val = $('#profile-input').value;
-      changeProfile(val);
-    });
+  const switchProfileBtn = $('#btn-open-profile-search');
+  if (switchProfileBtn) {
+    switchProfileBtn.addEventListener('click', openSearchModal);
   }
 
   $$('.profile-chip').forEach(chip => {
     chip.addEventListener('click', () => {
       const user = chip.getAttribute('data-user');
+      closeSearchModal();
       changeProfile(user);
     });
   });
@@ -1105,30 +1102,51 @@ function renderSearchResults(term) {
   if (!resultsContainer) return;
 
   const cleanTerm = term.trim().toLowerCase();
+  let html = '';
+
+  // Check if query looks like a potential username or URL
+  const potentialUser = extractUsername(cleanTerm);
+  if (potentialUser && potentialUser.length >= 2 && potentialUser !== currentUsername.toLowerCase()) {
+    html += `
+      <div class="profile-switch-action-card" id="btn-modal-switch-user" data-user="${escapeHtml(potentialUser)}">
+        <div class="profile-switch-info">
+          <span class="profile-switch-icon">👤</span>
+          <div>
+            <div class="profile-switch-title">Organize GitHub Profile for <strong>@${escapeHtml(potentialUser)}</strong></div>
+            <div class="profile-switch-sub">Click to load and organize @${escapeHtml(potentialUser)}'s repositories</div>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm">Organize →</button>
+      </div>
+    `;
+  }
+
   if (!cleanTerm) {
-    resultsContainer.innerHTML = `<div class="search-modal-hint">Type to search across all ${allRepos.length} repositories...</div>`;
-    return;
+    if (!html) {
+      resultsContainer.innerHTML = `<div class="search-modal-hint">Search repositories or type any GitHub profile username / URL...</div>`;
+      return;
+    }
   }
 
   const matches = allRepos.filter(repo => {
+    if (!cleanTerm) return false;
     const name = (repo.name || '').toLowerCase();
     const desc = (repo.description || '').toLowerCase();
     const lang = (repo.language || '').toLowerCase();
     return name.includes(cleanTerm) || desc.includes(cleanTerm) || lang.includes(cleanTerm);
   });
 
-  if (matches.length === 0) {
+  if (matches.length === 0 && cleanTerm && !html) {
     resultsContainer.innerHTML = `
       <div class="empty-state" style="padding: 30px 20px;">
         <div class="empty-state-icon">🔍</div>
         <div class="empty-state-text">No repositories match "${escapeHtml(term)}"</div>
-        <div class="empty-state-hint">Try searching by language (e.g. Python, Kotlin, JavaScript) or topic</div>
+        <div class="empty-state-hint">Type a profile username (e.g. cathrynlavery) to organize their GitHub profile</div>
       </div>
     `;
     return;
   }
 
-  let html = '';
   matches.forEach(repo => {
     let repoCat = 'Other Projects';
     for (const [catName, repos] of Object.entries(categorizedRepos)) {
@@ -1161,6 +1179,15 @@ function renderSearchResults(term) {
   });
 
   resultsContainer.innerHTML = html;
+
+  const switchUserCard = $('#btn-modal-switch-user');
+  if (switchUserCard) {
+    switchUserCard.addEventListener('click', () => {
+      const user = switchUserCard.dataset.user;
+      closeSearchModal();
+      changeProfile(user);
+    });
+  }
 
   $$('.search-result-card').forEach(card => {
     card.addEventListener('click', () => {

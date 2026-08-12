@@ -55,7 +55,7 @@
       </div>
     </header>
 
-    <!-- Profile Switcher Section -->
+    <!-- Profile Banner Section -->
     <div class="profile-switcher" id="profile-switcher">
       <div class="profile-switcher-left">
         <div class="profile-avatar-wrapper" id="profile-avatar-wrapper">
@@ -66,25 +66,9 @@
           <h2 class="profile-username" id="profile-username">@atanucsejgec</h2>
         </div>
       </div>
-      <div class="profile-switcher-right">
-        <form class="profile-input-form" id="profile-form">
-          <div class="profile-input-wrapper">
-            <span class="input-icon">👤</span>
-            <input type="text" class="profile-input" id="profile-input" placeholder="Paste GitHub profile URL or username (e.g. https://github.com/cathrynlavery)..." autocomplete="off">
-            <button type="submit" class="btn-load" id="btn-load-profile">
-              <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M10.68 11.74a6 6 0 0 1-7.922-8.982 6 6 0 0 1 8.982 7.922l3.04 3.04a.749.749 0 1 1-1.06 1.06l-3.04-3.04ZM11.5 7a4.499 4.499 0 1 0-8.997 0A4.499 4.499 0 0 0 11.5 7Z"/></svg>
-              Organize
-            </button>
-          </div>
-        </form>
-        <div class="profile-suggestions">
-          <span class="suggestion-label">Quick switch:</span>
-          <button class="profile-chip" data-user="atanucsejgec">@atanucsejgec</button>
-          <button class="profile-chip" data-user="cathrynlavery">@cathrynlavery</button>
-          <button class="profile-chip" data-user="torvalds">@torvalds</button>
-          <button class="profile-chip" data-user="gaearon">@gaearon</button>
-        </div>
-      </div>
+      <button class="btn-switch-profile" id="btn-open-profile-search">
+        <span>🔍 Switch Profile</span>
+      </button>
     </div>
 
     <!-- Stats Bar -->
@@ -123,18 +107,27 @@
         <button class="btn btn-primary" id="btn-save-token">Save & Reload</button>
       </div>
     </div>
-  <!-- Search Dialog Modal -->
+  </div>
+
+  <!-- Search & Profile Dialog Modal -->
   <div class="modal-overlay" id="search-modal">
     <div class="modal search-modal-dialog">
       <div class="search-modal-header">
         <div class="search-modal-input-wrapper">
           <span class="search-modal-icon">🔍</span>
-          <input type="text" class="search-modal-input" id="dialog-search-input" placeholder="Search repositories by name, language, or description..." autocomplete="off">
+          <input type="text" class="search-modal-input" id="dialog-search-input" placeholder="Search repos or paste GitHub profile URL (e.g. https://github.com/cathrynlavery)..." autocomplete="off">
           <kbd class="search-modal-kbd">ESC</kbd>
+        </div>
+        <div class="profile-suggestions modal-suggestions">
+          <span class="suggestion-label">Quick switch:</span>
+          <button class="profile-chip" data-user="atanucsejgec">@atanucsejgec</button>
+          <button class="profile-chip" data-user="cathrynlavery">@cathrynlavery</button>
+          <button class="profile-chip" data-user="torvalds">@torvalds</button>
+          <button class="profile-chip" data-user="gaearon">@gaearon</button>
         </div>
       </div>
       <div class="search-modal-results" id="search-modal-results">
-        <div class="search-modal-hint">Type to search across all repositories...</div>
+        <div class="search-modal-hint">Search repositories or type any GitHub profile username / URL...</div>
       </div>
     </div>
   </div>
