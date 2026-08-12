@@ -26,11 +26,8 @@ function getInitialUsername() {
     if (extracted) return extracted;
   }
 
-  const savedUser = localStorage.getItem('github_organizer_user');
-  if (savedUser) {
-    const extracted = extractUsername(savedUser);
-    if (extracted) return extracted;
-  }
+  // Clear any stored user to guarantee default profile is always 'atanucsejgec' on page reopen/refresh
+  localStorage.removeItem('github_organizer_user');
 
   return DEFAULT_USER;
 }
@@ -1026,9 +1023,8 @@ async function changeProfile(newInput) {
   }
 
   currentUsername = clean;
-  localStorage.setItem('github_organizer_user', clean);
 
-  // Sync URL search params ?user=username
+  // Sync URL search params ?user=username for shareability
   const url = new URL(window.location.href);
   url.searchParams.set('user', clean);
   window.history.replaceState({}, '', url.toString());
