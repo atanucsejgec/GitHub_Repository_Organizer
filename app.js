@@ -689,7 +689,11 @@ function renderRepoHeader(repo) {
           <span class="repo-meta-item">Updated ${updated}</span>
         </div>
       </div>
-      <div class="repo-actions">
+      <div class="repo-actions" style="display: flex; gap: 12px; align-items: center;">
+        <a href="${repo.html_url}/archive/refs/heads/${repo.default_branch || 'main'}.zip" target="_blank" rel="noopener" class="btn-outline">
+          <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"/><path d="M7.25 10.19 3.53 6.47a.749.749 0 0 1 1.06-1.06l2.41 2.41V2a.75.75 0 0 1 1.5 0v5.82l2.41-2.41a.749.749 0 0 1 1.06 1.06l-3.72 3.72a.749.749 0 0 1-1.06 0Z"/></svg>
+          Download ZIP
+        </a>
         <a href="${repo.html_url}" target="_blank" rel="noopener" class="btn-outline">
           ${icons.external} Open on GitHub
         </a>
