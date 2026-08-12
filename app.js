@@ -993,17 +993,58 @@ function renderPage() {
 }
 
 // ===== Profile Management =====
+let currentProfileInfo = null;
+
+async function fetchUserProfileData() {
+  try {
+    const res = await fetch(`https://api.github.com/users/${encodeURIComponent(currentUsername)}`, { headers: getHeaders() });
+    if (res.ok) {
+      currentProfileInfo = await res.json();
+    } else {
+      currentProfileInfo = null;
+    }
+  } catch (e) {
+    currentProfileInfo = null;
+  }
+}
+
 function updateProfileUI() {
   const userHeaderEl = $('#header-user-display');
   if (userHeaderEl) userHeaderEl.textContent = currentUsername;
 
   const profileUsernameEl = $('#profile-username');
-  if (profileUsernameEl) profileUsernameEl.textContent = `@${currentUsername}`;
+  if (profileUsernameEl) {
+    if (currentProfileInfo && currentProfileInfo.name) {
+      profileUsernameEl.innerHTML = `${escapeHtml(currentProfileInfo.name)} <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">(@${currentUsername})</span>`;
+    } else {
+      profileUsernameEl.textContent = `@${currentUsername}`;
+    }
+  }
+
+  const profileBioEl = $('#profile-bio');
+  if (profileBioEl) {
+    if (currentProfileInfo && currentProfileInfo.bio) {
+      profileBioEl.textContent = currentProfileInfo.bio;
+      profileBioEl.style.display = 'block';
+    } else if (currentProfileInfo && currentProfileInfo.company) {
+      profileBioEl.textContent = `🏢 ${currentProfileInfo.company}`;
+      profileBioEl.style.display = 'block';
+    } else {
+      profileBioEl.textContent = '';
+      profileBioEl.style.display = 'none';
+    }
+  }
+
+  const btnVisit = $('#btn-visit-profile');
+  if (btnVisit) {
+    btnVisit.href = `https://github.com/${currentUsername}`;
+  }
 
   const avatarWrapper = $('#profile-avatar-wrapper');
   if (avatarWrapper) {
-    if (allRepos.length > 0 && allRepos[0].owner && allRepos[0].owner.avatar_url) {
-      avatarWrapper.innerHTML = `<img src="${allRepos[0].owner.avatar_url}" alt="${currentUsername}">`;
+    const avatarUrl = (currentProfileInfo && currentProfileInfo.avatar_url) || (allRepos.length > 0 && allRepos[0].owner && allRepos[0].owner.avatar_url);
+    if (avatarUrl) {
+      avatarWrapper.innerHTML = `<img src="${avatarUrl}" alt="${currentUsername}">`;
     } else {
       avatarWrapper.innerHTML = `<div class="profile-avatar-fallback">👤</div>`;
     }
@@ -1036,11 +1077,6 @@ async function changeProfile(newInput) {
 }
 
 function bindProfileEvents() {
-  const switchProfileBtn = $('#btn-open-profile-search');
-  if (switchProfileBtn) {
-    switchProfileBtn.addEventListener('click', openSearchModal);
-  }
-
   $$('.profile-chip').forEach(chip => {
     chip.addEventListener('click', () => {
       const user = chip.getAttribute('data-user');
@@ -1059,7 +1095,11 @@ async function loadRepos() {
   updateProfileUI();
 
   try {
-    allRepos = await fetchAllRepos();
+    const [reposData] = await Promise.all([
+      fetchAllRepos(),
+      fetchUserProfileData()
+    ]);
+    allRepos = reposData;
     categorizedRepos = categorizeRepos(allRepos);
     isLoaded = true;
 
