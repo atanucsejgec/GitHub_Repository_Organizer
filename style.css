@@ -345,11 +345,11 @@ a {
   gap: 6px;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
-  color: var(--accent-blue);
+  color: var(--text-secondary);
   padding: 8px 16px;
   border-radius: var(--radius-md);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   text-decoration: none;
   transition: all var(--transition-fast);
@@ -357,11 +357,11 @@ a {
 }
 
 .btn-visit-profile:hover {
-  border-color: var(--accent-blue);
+  border-color: var(--text-secondary);
   background: var(--bg-hover);
-  color: #fff;
+  color: var(--text-primary);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .profile-suggestions {
