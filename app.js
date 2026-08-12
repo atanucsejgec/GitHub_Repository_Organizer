@@ -1,7 +1,41 @@
-// ===== Configuration =====
-const GITHUB_USER = 'atanucsejgec';
-const REPOS_API = `https://api.github.com/users/${GITHUB_USER}/repos`;
-const TREE_API_BASE = `https://api.github.com/repos/${GITHUB_USER}`;
+// ===== User & Configuration =====
+const DEFAULT_USER = 'atanucsejgec';
+
+function extractUsername(input) {
+  if (!input) return '';
+  let clean = input.trim();
+  clean = clean.replace(/^@/, '');
+
+  try {
+    if (clean.includes('github.com')) {
+      const url = new URL(clean.startsWith('http') ? clean : `https://${clean}`);
+      const parts = url.pathname.split('/').filter(p => p.length > 0 && p !== 'repositories' && p !== 'tab' && p !== 'stars');
+      if (parts.length > 0) return parts[0];
+    }
+  } catch (e) { }
+
+  clean = clean.replace(/^(https?:\/\/)?(www\.)?github\.com\//i, '').replace(/[\/\?#].*$/, '').trim();
+  return clean;
+}
+
+function getInitialUsername() {
+  const params = new URLSearchParams(window.location.search);
+  const queryUser = params.get('user') || params.get('profile');
+  if (queryUser) {
+    const extracted = extractUsername(queryUser);
+    if (extracted) return extracted;
+  }
+
+  const savedUser = localStorage.getItem('github_organizer_user');
+  if (savedUser) {
+    const extracted = extractUsername(savedUser);
+    if (extracted) return extracted;
+  }
+
+  return DEFAULT_USER;
+}
+
+let currentUsername = getInitialUsername();
 
 // ===== Category Definitions =====
 const CATEGORIES = {
@@ -73,17 +107,20 @@ async function fetchAllRepos() {
   const perPage = 100;
   const token = getToken();
 
-  // Use /user/repos when authenticated (returns private repos)
-  // Use /users/{username}/repos when unauthenticated (public only)
-  const baseUrl = token
+  // Use /user/repos when authenticated and looking at default user
+  // Use /users/{username}/repos for any target user
+  const baseUrl = (token && currentUsername.toLowerCase() === DEFAULT_USER.toLowerCase())
     ? 'https://api.github.com/user/repos'
-    : `https://api.github.com/users/${GITHUB_USER}/repos`;
+    : `https://api.github.com/users/${encodeURIComponent(currentUsername)}/repos`;
 
   while (true) {
     const url = `${baseUrl}?per_page=${perPage}&page=${page}&sort=updated`;
     const res = await fetch(url, { headers: getHeaders() });
 
     if (!res.ok) {
+      if (res.status === 404) {
+        throw new Error(`GitHub user "${currentUsername}" not found. Please check the profile URL or username.`);
+      }
       if (res.status === 401 || res.status === 403) {
         throw new Error(`GitHub API error ${res.status}: Invalid token or rate limited`);
       }
@@ -113,7 +150,7 @@ async function fetchRepoTree(repoName) {
   if (defaultBranch !== 'master') branchesToTry.push('master');
 
   for (const branch of branchesToTry) {
-    const url = `${TREE_API_BASE}/${repoName}/git/trees/${branch}?recursive=1`;
+    const url = `https://api.github.com/repos/${encodeURIComponent(currentUsername)}/${encodeURIComponent(repoName)}/git/trees/${branch}?recursive=1`;
     const res = await fetch(url, { headers: getHeaders() });
     if (res.ok) {
       const data = await res.json();
@@ -367,7 +404,7 @@ function renderHomePage() {
       </div>
       <ul class="explorer-file-list open" data-cat="${catName}">
         ${repos.map(repo => {
-      const linkUrl = repo.homepage || ((catName === 'Web' || catName === 'README Only / Empty') ? `https://${GITHUB_USER}.github.io/${repo.name}/` : null);
+      const linkUrl = repo.homepage || ((catName === 'Web' || catName === 'README Only / Empty') ? `https://${currentUsername}.github.io/${repo.name}/` : null);
 
       let linkText = '🌐 Link';
       if (catName === 'Web') linkText = '🌐 Website';
@@ -660,7 +697,7 @@ function renderRepoHeader(repo) {
   else if (repoCatName === 'README Only / Empty') { linkText = 'Preview'; linkIcon = '👁️'; }
 
   let hasWebsite = (repoCatName === 'Web' || repoCatName === 'README Only / Empty');
-  const linkUrl = repo.homepage || (hasWebsite ? `https://${GITHUB_USER}.github.io/${repo.name}/` : null);
+  const linkUrl = repo.homepage || (hasWebsite ? `https://${currentUsername}.github.io/${repo.name}/` : null);
 
   return `
     <div class="repo-header">
@@ -743,8 +780,8 @@ function renderTreeNode(node, repoName, depth = 0) {
     const hasChildren = Object.keys(child.children).length > 0;
     const isLast = idx === sortedChildren.length - 1;
     const fileInfo = getFileIcon(child.name);
-    const fileUrl = `https://github.com/${GITHUB_USER}/${repoName}/blob/${defaultBranch}/${child.path}`;
-    const dirUrl = `https://github.com/${GITHUB_USER}/${repoName}/tree/${defaultBranch}/${child.path}`;
+    const fileUrl = `https://github.com/${currentUsername}/${repoName}/blob/${defaultBranch}/${child.path}`;
+    const dirUrl = `https://github.com/${currentUsername}/${repoName}/tree/${defaultBranch}/${child.path}`;
 
     if (isDir) {
       html += `
@@ -977,26 +1014,90 @@ function renderPage() {
   }
 }
 
+// ===== Profile Management =====
+function updateProfileUI() {
+  const userHeaderEl = $('#header-user-display');
+  if (userHeaderEl) userHeaderEl.textContent = currentUsername;
+
+  const profileUsernameEl = $('#profile-username');
+  if (profileUsernameEl) profileUsernameEl.textContent = `@${currentUsername}`;
+
+  const avatarWrapper = $('#profile-avatar-wrapper');
+  if (avatarWrapper) {
+    if (allRepos.length > 0 && allRepos[0].owner && allRepos[0].owner.avatar_url) {
+      avatarWrapper.innerHTML = `<img src="${allRepos[0].owner.avatar_url}" alt="${currentUsername}">`;
+    } else {
+      avatarWrapper.innerHTML = `<div class="profile-avatar-fallback">👤</div>`;
+    }
+  }
+}
+
+async function changeProfile(newInput) {
+  const clean = extractUsername(newInput);
+  if (!clean) {
+    showToast('⚠️ Please enter a valid GitHub profile URL or username');
+    return;
+  }
+
+  if (clean.toLowerCase() === currentUsername.toLowerCase() && isLoaded) {
+    showToast(`Already showing profile for @${clean}`);
+    return;
+  }
+
+  currentUsername = clean;
+  localStorage.setItem('github_organizer_user', clean);
+
+  // Sync URL search params ?user=username
+  const url = new URL(window.location.href);
+  url.searchParams.set('user', clean);
+  window.history.replaceState({}, '', url.toString());
+
+  treeCache = {};
+  navigate('#/');
+  showToast(`Organizing repositories for @${clean}...`);
+  await loadRepos();
+}
+
+function bindProfileEvents() {
+  const profileForm = $('#profile-form');
+  if (profileForm) {
+    profileForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = $('#profile-input').value;
+      changeProfile(val);
+    });
+  }
+
+  $$('.profile-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const user = chip.getAttribute('data-user');
+      changeProfile(user);
+    });
+  });
+}
+
 // ===== Load Repos =====
 async function loadRepos() {
   showLoadingState();
   const refreshBtn = $('#btn-refresh');
   refreshBtn.classList.add('spinning');
   isLoaded = false;
+  updateProfileUI();
 
   try {
     allRepos = await fetchAllRepos();
     categorizedRepos = categorizeRepos(allRepos);
     isLoaded = true;
 
+    updateProfileUI();
     renderStatsBar();
     renderPage();
   } catch (err) {
     $('#page-container').innerHTML = `
       <div class="error-state">
         <div class="error-icon">⚠️</div>
-        <div class="error-message">${err.message}</div>
-        <div class="error-hint">Check your internet connection or add a GitHub token</div>
+        <div class="error-message">${escapeHtml(err.message)}</div>
+        <div class="error-hint">Check your internet connection or verify the GitHub username</div>
       </div>
     `;
   } finally {
@@ -1007,6 +1108,7 @@ async function loadRepos() {
 // ===== Init =====
 function init() {
   updateTokenStatus();
+  bindProfileEvents();
 
   $('#btn-settings').addEventListener('click', openSettings);
   $('#btn-refresh').addEventListener('click', () => {

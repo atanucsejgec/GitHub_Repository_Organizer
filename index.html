@@ -28,7 +28,7 @@
         </a>
         <div>
           <div class="header-title">GitHub Repositories</div>
-          <div class="header-subtitle">Repository Organizer for <strong>atanucsejgec</strong></div>
+          <div class="header-subtitle" id="header-subtitle">Repository Organizer for <strong id="header-user-display">atanucsejgec</strong></div>
         </div>
       </div>
       <!-- Breadcrumb -->
@@ -48,6 +48,38 @@
         </button>
       </div>
     </header>
+
+    <!-- Profile Switcher Section -->
+    <div class="profile-switcher" id="profile-switcher">
+      <div class="profile-switcher-left">
+        <div class="profile-avatar-wrapper" id="profile-avatar-wrapper">
+          <div class="profile-avatar-fallback">👤</div>
+        </div>
+        <div class="profile-details">
+          <span class="profile-tag">ORGANIZING REPOSITORIES FOR</span>
+          <h2 class="profile-username" id="profile-username">@atanucsejgec</h2>
+        </div>
+      </div>
+      <div class="profile-switcher-right">
+        <form class="profile-input-form" id="profile-form">
+          <div class="profile-input-wrapper">
+            <span class="input-icon">👤</span>
+            <input type="text" class="profile-input" id="profile-input" placeholder="Paste GitHub profile URL or username (e.g. https://github.com/cathrynlavery)..." autocomplete="off">
+            <button type="submit" class="btn-load" id="btn-load-profile">
+              <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M10.68 11.74a6 6 0 0 1-7.922-8.982 6 6 0 0 1 8.982 7.922l3.04 3.04a.749.749 0 1 1-1.06 1.06l-3.04-3.04ZM11.5 7a4.499 4.499 0 1 0-8.997 0A4.499 4.499 0 0 0 11.5 7Z"/></svg>
+              Organize
+            </button>
+          </div>
+        </form>
+        <div class="profile-suggestions">
+          <span class="suggestion-label">Quick switch:</span>
+          <button class="profile-chip" data-user="atanucsejgec">@atanucsejgec</button>
+          <button class="profile-chip" data-user="cathrynlavery">@cathrynlavery</button>
+          <button class="profile-chip" data-user="torvalds">@torvalds</button>
+          <button class="profile-chip" data-user="gaearon">@gaearon</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Stats Bar -->
     <div class="stats-bar" id="stats-bar"></div>
